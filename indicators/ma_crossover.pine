@@ -1,0 +1,42 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// at https://mozilla.org/MPL/2.0/
+
+//@version=5
+indicator(title="Moving Average Crossover", shorttitle="MA Cross", overlay=true)
+
+// Inputs
+fastLength = input.int(9, title="Fast MA Length", minval=1)
+slowLength = input.int(21, title="Slow MA Length", minval=1)
+maType     = input.string("EMA", title="MA Type", options=["EMA", "SMA", "WMA"])
+
+// Calculate Moving Averages
+ma(source, length, type) =>
+    switch type
+        "EMA" => ta.ema(source, length)
+        "SMA" => ta.sma(source, length)
+        "WMA" => ta.wma(source, length)
+
+fastMA = ma(close, fastLength, maType)
+slowMA = ma(close, slowLength, maType)
+
+// Plot Moving Averages
+plot(fastMA, color=color.blue, linewidth=2, title="Fast MA")
+plot(slowMA, color=color.orange, linewidth=2, title="Slow MA")
+
+// Crossover signals
+bullishCross = ta.crossover(fastMA, slowMA)
+bearishCross = ta.crossunder(fastMA, slowMA)
+
+// Plot crossover signals
+plotshape(bullishCross, style=shape.triangleup, location=location.belowbar,
+     color=color.green, size=size.small, title="Bullish Cross")
+plotshape(bearishCross, style=shape.triangledown, location=location.abovebar,
+     color=color.red, size=size.small, title="Bearish Cross")
+
+// Background color on crossover
+bgcolor(bullishCross ? color.new(color.green, 90) : na)
+bgcolor(bearishCross ? color.new(color.red, 90) : na)
+
+// Alerts
+alertcondition(bullishCross, title="Bullish MA Cross", message="Bullish MA Crossover detected!")
+alertcondition(bearishCross, title="Bearish MA Cross", message="Bearish MA Crossunder detected!")
