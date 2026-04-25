@@ -1,0 +1,98 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// at https://mozilla.org/MPL/2.0/
+
+//@version=5
+indicator(title="EMA 20/50/100/200", shorttitle="EMA Multi", overlay=true)
+
+// ─── Source ───────────────────────────────────────────────────────────────────
+src = input.source(close, title="Price Source")
+
+// ─── EMA 20 ───────────────────────────────────────────────────────────────────
+grp1 = "EMA 20"
+show1    = input.bool(true,           title="Show",       group=grp1, inline="1")
+len1     = input.int(20,              title="Length",     group=grp1, inline="1", minval=1)
+col1     = input.color(color.red,     title="Color",      group=grp1, inline="2")
+width1   = input.int(1,               title="Width",      group=grp1, inline="2", minval=1, maxval=5)
+style1   = input.string("Solid",      title="Style",      group=grp1, inline="2", options=["Solid", "Dashed", "Dotted"])
+
+// ─── EMA 50 ───────────────────────────────────────────────────────────────────
+grp2 = "EMA 50"
+show2    = input.bool(true,           title="Show",       group=grp2, inline="1")
+len2     = input.int(50,              title="Length",     group=grp2, inline="1", minval=1)
+col2     = input.color(color.orange,  title="Color",      group=grp2, inline="2")
+width2   = input.int(1,               title="Width",      group=grp2, inline="2", minval=1, maxval=5)
+style2   = input.string("Solid",      title="Style",      group=grp2, inline="2", options=["Solid", "Dashed", "Dotted"])
+
+// ─── EMA 100 ──────────────────────────────────────────────────────────────────
+grp3 = "EMA 100"
+show3    = input.bool(true,           title="Show",       group=grp3, inline="1")
+len3     = input.int(100,             title="Length",     group=grp3, inline="1", minval=1)
+col3     = input.color(color.aqua,    title="Color",      group=grp3, inline="2")
+width3   = input.int(1,               title="Width",      group=grp3, inline="2", minval=1, maxval=5)
+style3   = input.string("Solid",      title="Style",      group=grp3, inline="2", options=["Solid", "Dashed", "Dotted"])
+
+// ─── EMA 200 ──────────────────────────────────────────────────────────────────
+grp4 = "EMA 200"
+show4    = input.bool(true,           title="Show",       group=grp4, inline="1")
+len4     = input.int(200,             title="Length",     group=grp4, inline="1", minval=1)
+col4     = input.color(color.blue,    title="Color",      group=grp4, inline="2")
+width4   = input.int(2,               title="Width",      group=grp4, inline="2", minval=1, maxval=5)
+style4   = input.string("Solid",      title="Style",      group=grp4, inline="2", options=["Solid", "Dashed", "Dotted"])
+
+// ─── Extras ───────────────────────────────────────────────────────────────────
+grpEx = "Extras"
+showLabels = input.bool(true,  title="Show value labels on last bar", group=grpEx)
+showCross  = input.bool(true,  title="Highlight price × EMA200 cross", group=grpEx)
+
+// ─── Helper: map style string to plot.style_* ─────────────────────────────────
+lineStyle(s) =>
+    switch s
+        "Dashed" => plot.style_linebr    // closest available dashed style
+        "Dotted" => plot.style_circles
+        => plot.style_line
+
+// ─── Calculations ─────────────────────────────────────────────────────────────
+ema1 = ta.ema(src, len1)
+ema2 = ta.ema(src, len2)
+ema3 = ta.ema(src, len3)
+ema4 = ta.ema(src, len4)
+
+// ─── Plots ────────────────────────────────────────────────────────────────────
+plot(show1 ? ema1 : na, title="EMA 20",  color=col1, linewidth=width1, style=lineStyle(style1))
+plot(show2 ? ema2 : na, title="EMA 50",  color=col2, linewidth=width2, style=lineStyle(style2))
+plot(show3 ? ema3 : na, title="EMA 100", color=col3, linewidth=width3, style=lineStyle(style3))
+plot(show4 ? ema4 : na, title="EMA 200", color=col4, linewidth=width4, style=lineStyle(style4))
+
+// ─── Value labels on the last bar ─────────────────────────────────────────────
+if showLabels and barstate.islast
+    if show1
+        label.new(bar_index, ema1, text="EMA" + str.tostring(len1) + "\n" + str.tostring(ema1, "#.##"),
+             color=col1, textcolor=color.white, style=label.style_label_left, size=size.small)
+    if show2
+        label.new(bar_index, ema2, text="EMA" + str.tostring(len2) + "\n" + str.tostring(ema2, "#.##"),
+             color=col2, textcolor=color.white, style=label.style_label_left, size=size.small)
+    if show3
+        label.new(bar_index, ema3, text="EMA" + str.tostring(len3) + "\n" + str.tostring(ema3, "#.##"),
+             color=col3, textcolor=color.white, style=label.style_label_left, size=size.small)
+    if show4
+        label.new(bar_index, ema4, text="EMA" + str.tostring(len4) + "\n" + str.tostring(ema4, "#.##"),
+             color=col4, textcolor=color.white, style=label.style_label_left, size=size.small)
+
+// ─── Price × EMA200 cross highlight ───────────────────────────────────────────
+priceAbove200 = close > ema4
+priceBelow200 = close < ema4
+crossAbove200 = showCross and ta.crossover(close, ema4)
+crossBelow200 = showCross and ta.crossunder(close, ema4)
+
+bgcolor(crossAbove200 ? color.new(color.green, 80) : crossBelow200 ? color.new(color.red, 80) : na,
+     title="EMA200 Cross Background")
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+alertcondition(ta.crossover(close, ema1),  title="Price Crossed Above EMA20",  message="Price crossed above EMA20")
+alertcondition(ta.crossunder(close, ema1), title="Price Crossed Below EMA20",  message="Price crossed below EMA20")
+alertcondition(ta.crossover(close, ema2),  title="Price Crossed Above EMA50",  message="Price crossed above EMA50")
+alertcondition(ta.crossunder(close, ema2), title="Price Crossed Below EMA50",  message="Price crossed below EMA50")
+alertcondition(ta.crossover(close, ema3),  title="Price Crossed Above EMA100", message="Price crossed above EMA100")
+alertcondition(ta.crossunder(close, ema3), title="Price Crossed Below EMA100", message="Price crossed below EMA100")
+alertcondition(ta.crossover(close, ema4),  title="Price Crossed Above EMA200", message="Price crossed above EMA200")
+alertcondition(ta.crossunder(close, ema4), title="Price Crossed Below EMA200", message="Price crossed below EMA200")
