@@ -1,0 +1,50 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// at https://mozilla.org/MPL/2.0/
+
+//@version=5
+strategy(title="MA Crossover Strategy", shorttitle="MA Cross Strat",
+     overlay=true, initial_capital=10000,
+     default_qty_type=strategy.percent_of_equity, default_qty_value=100,
+     commission_type=strategy.commission.percent, commission_value=0.1)
+
+// Inputs
+fastLength  = input.int(9, title="Fast MA Length", minval=1, group="MA Settings")
+slowLength  = input.int(21, title="Slow MA Length", minval=1, group="MA Settings")
+maType      = input.string("EMA", title="MA Type",
+     options=["EMA", "SMA", "WMA"], group="MA Settings")
+
+// Date filter
+startDate = input.time(timestamp("2020-01-01"), title="Start Date", group="Date Filter")
+endDate   = input.time(timestamp("2099-12-31"), title="End Date", group="Date Filter")
+inDateRange = time >= startDate and time <= endDate
+
+// Moving Average calculation
+ma(source, length, type) =>
+    switch type
+        "EMA" => ta.ema(source, length)
+        "SMA" => ta.sma(source, length)
+        "WMA" => ta.wma(source, length)
+
+fastMA = ma(close, fastLength, maType)
+slowMA = ma(close, slowLength, maType)
+
+// Plot MAs
+plot(fastMA, color=color.blue, linewidth=2, title="Fast MA")
+plot(slowMA, color=color.orange, linewidth=2, title="Slow MA")
+
+// Entry/Exit signals
+bullishCross = ta.crossover(fastMA, slowMA)
+bearishCross = ta.crossunder(fastMA, slowMA)
+
+// Execute trades
+if bullishCross and inDateRange
+    strategy.entry("Long", strategy.long, comment="Buy")
+
+if bearishCross and inDateRange
+    strategy.close("Long", comment="Sell")
+
+// Plot signals
+plotshape(bullishCross and inDateRange, style=shape.triangleup,
+     location=location.belowbar, color=color.green, size=size.small, title="Buy")
+plotshape(bearishCross and inDateRange, style=shape.triangledown,
+     location=location.abovebar, color=color.red, size=size.small, title="Sell")

@@ -1,0 +1,43 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// at https://mozilla.org/MPL/2.0/
+
+//@version=5
+indicator(title="RSI with Overbought/Oversold Zones", shorttitle="RSI OB/OS", overlay=false)
+
+// Inputs
+rsiLength    = input.int(14, title="RSI Length", minval=1)
+overbought   = input.int(70, title="Overbought Level", minval=50, maxval=100)
+oversold     = input.int(30, title="Oversold Level", minval=0, maxval=50)
+smoothLength = input.int(3, title="Signal Smoothing", minval=1)
+
+// RSI Calculation
+rsiValue  = ta.rsi(close, rsiLength)
+rsiSignal = ta.ema(rsiValue, smoothLength)
+
+// Zone detection
+isOverbought = rsiValue >= overbought
+isOversold   = rsiValue <= oversold
+
+// Plot RSI
+rsiColor = isOverbought ? color.red : isOversold ? color.green : color.blue
+plot(rsiValue, color=rsiColor, linewidth=2, title="RSI")
+plot(rsiSignal, color=color.orange, linewidth=1, title="Signal")
+
+// Reference levels
+hline(overbought, "Overbought", color=color.red, linestyle=hline.style_dashed)
+hline(50, "Midline", color=color.gray, linestyle=hline.style_dotted)
+hline(oversold, "Oversold", color=color.green, linestyle=hline.style_dashed)
+
+// Fill OB/OS zones
+obZone = plot(overbought, color=color.new(color.red, 100), display=display.none)
+osZone = plot(oversold, color=color.new(color.green, 100), display=display.none)
+rsiPlot = plot(rsiValue, color=color.new(color.blue, 100), display=display.none)
+
+fill(rsiPlot, obZone, color=isOverbought ? color.new(color.red, 80) : na, title="OB Zone Fill")
+fill(rsiPlot, osZone, color=isOversold ? color.new(color.green, 80) : na, title="OS Zone Fill")
+
+// Alerts
+alertcondition(ta.crossover(rsiValue, overbought), title="RSI Enters Overbought",
+     message="RSI entered overbought zone!")
+alertcondition(ta.crossunder(rsiValue, oversold), title="RSI Enters Oversold",
+     message="RSI entered oversold zone!")
