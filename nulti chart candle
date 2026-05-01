@@ -527,13 +527,25 @@ method FindImbalance(CandleSet candleSet) =>
 
                 if candle1.l > candle2.h and math.min(candle1.o, candle1.c) > math.max(candle2.o, candle2.c)
                     Imbalance imb = Imbalance.new()
-                    _fvg_right = settings.fvg_extend ? box.get_right(candleSet.candles.first().body) : box.get_right(candle1.body)
+                    bool bull_fvg_filled = false
+                    if i > 0
+                        for j = 0 to i - 1
+                            if candleSet.candles.get(j).l <= candle2.h
+                                bull_fvg_filled := true
+                                break
+                    _fvg_right = (settings.fvg_extend and not bull_fvg_filled) ? box.get_right(candleSet.candles.first().body) : box.get_right(candle1.body)
                     imb.b := box.new(box.get_left(candle2.body), candle2.h, _fvg_right, candle1.l, bgcolor = settings.fvg_bull_color, border_color = settings.fvg_bull_color, border_width = 1, xloc = xloc.bar_index)
                     candleSet.imbalances.push(imb)
                 if candle1.h < candle2.l and math.max(candle1.o, candle1.c) < math.min(candle2.o, candle2.c)
                     Imbalance imb = Imbalance.new()
-                    _fvg_right = settings.fvg_extend ? box.get_right(candleSet.candles.first().body) : box.get_right(candle1.body)
-                    _fvg_left  = settings.fvg_extend ? box.get_right(candle1.body) : box.get_left(candle2.body)
+                    bool bear_fvg_filled = false
+                    if i > 0
+                        for j = 0 to i - 1
+                            if candleSet.candles.get(j).h >= candle2.l
+                                bear_fvg_filled := true
+                                break
+                    _fvg_right = (settings.fvg_extend and not bear_fvg_filled) ? box.get_right(candleSet.candles.first().body) : box.get_right(candle1.body)
+                    _fvg_left  = (settings.fvg_extend and not bear_fvg_filled) ? box.get_right(candle1.body) : box.get_left(candle2.body)
                     imb.b := box.new(_fvg_left, candle1.h, _fvg_right, candle2.l, bgcolor = settings.fvg_bear_color, border_color = settings.fvg_bear_color, border_width = 1)
                     candleSet.imbalances.push(imb)
                 box temp = box.copy(candle3.body)
