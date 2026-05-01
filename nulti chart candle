@@ -4,7 +4,7 @@
 // Prev Published: 1008
 // Curr Published: 1046
 //@version=6
-indicator('ICT HTF Candles (fadi)', overlay = true, max_boxes_count = 500, max_lines_count = 9999, max_labels_count = 500, max_bars_back = 5000)
+indicator('ICT HTF Candles (fadi)', overlay = true, max_boxes_count = 500, max_lines_count = 500, max_labels_count = 500, max_bars_back = 5000)
 
 type Candle
 	float o
@@ -167,32 +167,32 @@ string group_trace              = "Trace  ━━━━━━━━━━━━�
 htf1.settings.show              := input.bool(true, 'HTF 1      ', inline = 'htf1')
 htf_1                           = input.timeframe('5', '', inline = 'htf1')
 htf1.settings.htf := htf_1
-htf1.settings.max_display       := input.int(50, '', inline = 'htf1', minval = 1)
+htf1.settings.max_display       := input.int(20, '', inline = 'htf1', minval = 1)
 
 htf2.settings.show              := input.bool(true, 'HTF 2      ', inline = 'htf2')
 htf_2                           = input.timeframe('15', '', inline = 'htf2')
 htf2.settings.htf := htf_2
-htf2.settings.max_display       := input.int(50, '', inline = 'htf2', minval = 1)
+htf2.settings.max_display       := input.int(20, '', inline = 'htf2', minval = 1)
 
 htf3.settings.show              := input.bool(true, 'HTF 3      ', inline = 'htf3')
 htf_3                           = input.timeframe('60', '', inline = 'htf3')
 htf3.settings.htf := htf_3
-htf3.settings.max_display       := input.int(50, '', inline = 'htf3', minval = 1)
+htf3.settings.max_display       := input.int(20, '', inline = 'htf3', minval = 1)
 
 htf4.settings.show              := input.bool(true, 'HTF 4      ', inline = 'htf4')
 htf_4                           = input.timeframe('240', '', inline = 'htf4')
 htf4.settings.htf               := htf_4
-htf4.settings.max_display       := input.int(50, '', inline = 'htf4', minval = 1)
+htf4.settings.max_display       := input.int(20, '', inline = 'htf4', minval = 1)
 
 htf5.settings.show              := input.bool(true, 'HTF 5      ', inline = 'htf5')
 htf_5                           = input.timeframe('1D', '', inline = 'htf5')
 htf5.settings.htf := htf_5
-htf5.settings.max_display       := input.int(50, '', inline = 'htf5', minval = 1)
+htf5.settings.max_display       := input.int(20, '', inline = 'htf5', minval = 1)
 
 htf6.settings.show              := input.bool(true, 'HTF 6      ', inline = 'htf6')
 htf_6                           = input.timeframe('1W', '', inline = 'htf6')
 htf6.settings.htf               := htf_6
-htf6.settings.max_display       := input.int(50, '', inline = 'htf6', minval = 1)
+htf6.settings.max_display       := input.int(20, '', inline = 'htf6', minval = 1)
 
 settings.max_sets               := input.int(6, 'Limit to next HTFs only', minval = 1, maxval = 6)
 settings.use_custom_daily       := input.bool(false, 'Custom daily candle open     ', inline='customdaily')
