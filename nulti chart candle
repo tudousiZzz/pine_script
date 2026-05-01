@@ -4,7 +4,7 @@
 // Prev Published: 1008
 // Curr Published: 1046
 //@version=6
-indicator('ICT HTF Candles (fadi)', overlay = true, max_boxes_count = 500, max_lines_count = 500, max_labels_count = 500, max_bars_back = 5000)
+indicator('ICT HTF Candles (fadi)', overlay = true, max_boxes_count = 500, max_lines_count = 9999, max_labels_count = 500, max_bars_back = 5000)
 
 type Candle
 	float o
@@ -76,6 +76,7 @@ type Settings
     string label_position
     string label_alignment
 	bool fvg_show
+	bool fvg_extend
 	color fvg_bull_color
 	color fvg_bear_color
 	bool vi_show
@@ -166,32 +167,32 @@ string group_trace              = "Trace  ━━━━━━━━━━━━�
 htf1.settings.show              := input.bool(true, 'HTF 1      ', inline = 'htf1')
 htf_1                           = input.timeframe('5', '', inline = 'htf1')
 htf1.settings.htf := htf_1
-htf1.settings.max_display       := input.int(20, '', inline = 'htf1', minval = 1)
+htf1.settings.max_display       := input.int(50, '', inline = 'htf1', minval = 1)
 
 htf2.settings.show              := input.bool(true, 'HTF 2      ', inline = 'htf2')
 htf_2                           = input.timeframe('15', '', inline = 'htf2')
 htf2.settings.htf := htf_2
-htf2.settings.max_display       := input.int(20, '', inline = 'htf2', minval = 1)
+htf2.settings.max_display       := input.int(50, '', inline = 'htf2', minval = 1)
 
 htf3.settings.show              := input.bool(true, 'HTF 3      ', inline = 'htf3')
 htf_3                           = input.timeframe('60', '', inline = 'htf3')
 htf3.settings.htf := htf_3
-htf3.settings.max_display       := input.int(20, '', inline = 'htf3', minval = 1)
+htf3.settings.max_display       := input.int(50, '', inline = 'htf3', minval = 1)
 
 htf4.settings.show              := input.bool(true, 'HTF 4      ', inline = 'htf4')
 htf_4                           = input.timeframe('240', '', inline = 'htf4')
 htf4.settings.htf               := htf_4
-htf4.settings.max_display       := input.int(20, '', inline = 'htf4', minval = 1)
+htf4.settings.max_display       := input.int(50, '', inline = 'htf4', minval = 1)
 
 htf5.settings.show              := input.bool(true, 'HTF 5      ', inline = 'htf5')
 htf_5                           = input.timeframe('1D', '', inline = 'htf5')
 htf5.settings.htf := htf_5
-htf5.settings.max_display       := input.int(20, '', inline = 'htf5', minval = 1)
+htf5.settings.max_display       := input.int(50, '', inline = 'htf5', minval = 1)
 
 htf6.settings.show              := input.bool(true, 'HTF 6      ', inline = 'htf6')
 htf_6                           = input.timeframe('1W', '', inline = 'htf6')
 htf6.settings.htf               := htf_6
-htf6.settings.max_display       := input.int(20, '', inline = 'htf6', minval = 1)
+htf6.settings.max_display       := input.int(50, '', inline = 'htf6', minval = 1)
 
 settings.max_sets               := input.int(6, 'Limit to next HTFs only', minval = 1, maxval = 6)
 settings.use_custom_daily       := input.bool(false, 'Custom daily candle open     ', inline='customdaily')
@@ -224,6 +225,7 @@ settings.dow_color              := input.color(color.black , '', group=group_lab
 settings.dow_size               := input.string(size.small, '', [size.tiny, size.small, size.normal, size.large, size.huge], group=group_label, inline = 'dow')
 
 settings.fvg_show               := input.bool(true, 'Fair Value Gap', group = group_imbalance, inline = 'fvg')
+settings.fvg_extend             := input.bool(true, 'Extend', group = group_imbalance, inline = 'fvg')
 settings.fvg_bull_color         := input.color(color.new(color.green, 30), '↑', inline = 'fvg', group = group_imbalance)
 settings.fvg_bear_color         := input.color(color.new(color.red, 30), '↓', inline = 'fvg', group = group_imbalance)
 
@@ -525,13 +527,14 @@ method FindImbalance(CandleSet candleSet) =>
 
                 if candle1.l > candle2.h and math.min(candle1.o, candle1.c) > math.max(candle2.o, candle2.c)
                     Imbalance imb = Imbalance.new()
-                    _fvg_right = box.get_right(candleSet.candles.first().body)
+                    _fvg_right = settings.fvg_extend ? box.get_right(candleSet.candles.first().body) : box.get_right(candle1.body)
                     imb.b := box.new(box.get_left(candle2.body), candle2.h, _fvg_right, candle1.l, bgcolor = settings.fvg_bull_color, border_color = settings.fvg_bull_color, border_width = 1, xloc = xloc.bar_index)
                     candleSet.imbalances.push(imb)
                 if candle1.h < candle2.l and math.max(candle1.o, candle1.c) < math.min(candle2.o, candle2.c)
                     Imbalance imb = Imbalance.new()
-                    _fvg_right = box.get_right(candleSet.candles.first().body)
-                    imb.b := box.new(box.get_right(candle1.body), candle1.h, _fvg_right, candle2.l, bgcolor = settings.fvg_bear_color, border_color = settings.fvg_bear_color, border_width = 1)
+                    _fvg_right = settings.fvg_extend ? box.get_right(candleSet.candles.first().body) : box.get_right(candle1.body)
+                    _fvg_left  = settings.fvg_extend ? box.get_right(candle1.body) : box.get_left(candle2.body)
+                    imb.b := box.new(_fvg_left, candle1.h, _fvg_right, candle2.l, bgcolor = settings.fvg_bear_color, border_color = settings.fvg_bear_color, border_width = 1)
                     candleSet.imbalances.push(imb)
                 box temp = box.copy(candle3.body)
                 box.delete(candle3.body)
